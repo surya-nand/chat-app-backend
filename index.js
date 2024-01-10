@@ -3,6 +3,7 @@ const mongoose = require("mongoose");
 const cors = require("cors");
 const dotEnv = require("dotenv");
 const bodyParser = require("body-parser");
+const {userRoutes} = require('./routes/userRoutes')
 
 
 const app = express();
@@ -18,6 +19,8 @@ app.get("/", (req, res) => {
     message: "API's are working fine",
   });
 });
+
+userRoutes(app);
 
 app.listen(process.env.PORT, () => {
   mongoose
