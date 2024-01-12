@@ -84,18 +84,17 @@ const searchUsers = async (req, res) => {
           ],
         }
       : {};
-    console.log(req.user)
-    const users = await User.find(keyword).find({_id:{$ne: req.user._id}})
+    const users = await User.find(keyword).find({ _id: { $ne: req.user._id } });
     res.status(200).send({
-        message: 'search successful',
-        userDetails: users,
-    })
+      message: "search successful",
+      userDetails: users,
+    });
   } catch (error) {
     res.status(500).send({
-        message: 'Internal server error',
-        error: error.message,
-    })
+      message: "Internal server error",
+      error: error.message,
+    });
   }
 };
 
-module.exports = { registerUser, loginUser,searchUsers };
+module.exports = { registerUser, loginUser, searchUsers };
