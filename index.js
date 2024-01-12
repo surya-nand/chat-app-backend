@@ -4,6 +4,7 @@ const cors = require("cors");
 const dotEnv = require("dotenv");
 const bodyParser = require("body-parser");
 const {userRoutes} = require('./routes/userRoutes')
+const {chatRoutes} = require('./routes/chatRoutes')
 
 
 const app = express();
@@ -21,6 +22,7 @@ app.get("/", (req, res) => {
 });
 
 userRoutes(app);
+chatRoutes(app);
 
 app.listen(process.env.PORT, () => {
   mongoose
