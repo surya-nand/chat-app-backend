@@ -5,6 +5,7 @@ const dotEnv = require("dotenv");
 const bodyParser = require("body-parser");
 const {userRoutes} = require('./routes/userRoutes')
 const {chatRoutes} = require('./routes/chatRoutes')
+const {messageRoutes} = require('./routes/messageRoutes')
 
 
 const app = express();
@@ -23,6 +24,7 @@ app.get("/", (req, res) => {
 
 userRoutes(app);
 chatRoutes(app);
+messageRoutes(app);
 
 app.listen(process.env.PORT, () => {
   mongoose

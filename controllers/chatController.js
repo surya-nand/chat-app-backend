@@ -1,4 +1,3 @@
-const { json } = require("body-parser");
 const Chat = require("../models/chatModel");
 
 const accessChat = async (req, res) => {
@@ -17,7 +16,7 @@ const accessChat = async (req, res) => {
     .populate({
       path: "latestMessage",
       populate: {
-        path: "latestMessage.sender",
+        path: "sender",
         select: "name picture email",
       },
     });
@@ -33,7 +32,6 @@ const accessChat = async (req, res) => {
       isGroupChat: false,
       users: [req.user._id, userId],
     };
-    // console.log(chatData)
     try {
       const createdChat = await Chat.create(chatData);
       const populatedCreatedChat = await Chat.findById(
@@ -54,7 +52,6 @@ const accessChat = async (req, res) => {
 
 const fetchChats = async (req, res) => {
   try {
-    // Find all chats where the logged-in user's ID is present in the users array
     const userChats = await Chat.find({
       users: req.user._id,
     })
@@ -69,7 +66,7 @@ const fetchChats = async (req, res) => {
       .populate({
         path: "latestMessage",
         populate: {
-          path: "latestMessage.sender",
+          path: "sender",
           select: "name picture email",
         },
       })
@@ -84,6 +81,7 @@ const fetchChats = async (req, res) => {
       message: "Internal server error",
       error: error.message,
     });
+    console.log(error.message)
   }
 };
 
@@ -165,21 +163,21 @@ const renameGroup = async (req, res) => {
 const removeFromGroup = async (req, res) => {
   const { chatId, userId } = req.body;
   try {
-    const userRemoved = await Chat.findByIdAndUpdate(
+    const updatedChat = await Chat.findByIdAndUpdate(
       chatId,
       { $pull : {users: userId}},
       { new: true }
     )
       .populate("users","-password")
       .populate("groupAdmin", "-password");
-    if (!userRemoved) {
+    if (!updatedChat) {
       res.status(404).send({
         message: "Group not found",
       });
     } else {
       res.status(200).send({
         message: "User removed from group successfully",
-        details: userRemoved,
+        details: updatedChat,
       });
     }
   } catch (error) {

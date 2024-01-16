@@ -1,5 +1,10 @@
 const mongoose = require("mongoose");
 
+const reactionSchema = new mongoose.Schema({
+  user: {type: mongoose.Schema.Types.ObjectId,ref:"User"},
+  type: {type:String, enum:["like","love","laugh"]}
+})
+
 const messageModel = mongoose.Schema(
   {
     sender: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
@@ -8,6 +13,7 @@ const messageModel = mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: "Chat",
     },
+    reactions:[reactionSchema],
   },
   {
     timestamps: true,
