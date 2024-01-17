@@ -4,7 +4,7 @@ const jwt = require("jsonwebtoken");
 
 const registerUser = async (req, res) => {
   try {
-    const { name, email, password, confirmPassword } = req.body;
+    const { name, email, password, picture, confirmPassword } = req.body;
     const existingUser = await User.findOne({ email });
     if (existingUser) {
       return res.status(400).send({
@@ -20,6 +20,7 @@ const registerUser = async (req, res) => {
       const newUser = new User({
         name,
         email,
+        picture,
         password: hashedPassword,
         salt,
       });
@@ -63,6 +64,7 @@ const loginUser = async (req, res) => {
         message: "Login Successful",
         token: token,
         userDetails: user,
+        userRole: user.role,
       });
     } else {
       return res.status(400).send({ message: "Invalid Credentials" });
@@ -97,4 +99,78 @@ const searchUsers = async (req, res) => {
   }
 };
 
-module.exports = { registerUser, loginUser, searchUsers };
+const fetchUsers = async (req, res) => {
+  try {
+    const loggedInUserId = req.user._id;
+    const users = await User.find({ _id: { $ne: loggedInUserId } });
+    res.status(200).send({
+      message: "Fetched all users",
+      details: users,
+    });
+  } catch (error) {
+    res.status(500).send({
+      message: "Failed in fetching users",
+      error: error,
+    });
+  }
+};
+
+const updateUser = async (req, res) => {
+  try {
+    const { name, email, picture } = req.body;
+    const userId = req.params.userId;
+    const emailExists = await User.findOne({ email, _id: { $ne: userId } });
+    if (emailExists) {
+      return res.status(400).send({
+        message: "Email is already in use by another user",
+      });
+    }
+    const updatedUser = await User.findByIdAndUpdate(userId, {
+      name,
+      email,
+      picture,
+    });
+    res.status(200).send({
+      message: "user details updated",
+      details: updatedUser,
+    });
+  } catch (error) {
+    res.status(500).send({
+      message: "Internal error",
+      error: error,
+    });
+  }
+};
+
+const fetchUserById = async (req, res) => {
+  try {
+    const { userId } = req.params;
+
+    const user = await User.findById(userId);
+
+    if (!user) {
+      return res.status(404).send({
+        message: "User not found",
+      });
+    }
+
+    res.status(200).send({
+      message: "User fetched successfully",
+      details: user,
+    });
+  } catch (error) {
+    res.status(500).send({
+      message: "Failed to fetch user",
+      error: error,
+    });
+  }
+};
+
+module.exports = {
+  registerUser,
+  loginUser,
+  searchUsers,
+  fetchUsers,
+  updateUser,
+  fetchUserById,
+};

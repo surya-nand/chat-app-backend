@@ -24,7 +24,7 @@ const sendMessage = async (req, res) => {
   if (!content || !chatId) {
     console.log("Invalid data");
     return res.status(400).send({
-        message: "Please fill the message"
+      message: "Please fill the message",
     });
   }
 
@@ -37,8 +37,8 @@ const sendMessage = async (req, res) => {
   try {
     var message = await Message.create(newMessage);
 
-    message = await message.populate("sender", "name picture")
-    message = await message.populate("chat")
+    message = await message.populate("sender", "name picture");
+    message = await message.populate("chat");
     message = await User.populate(message, {
       path: "chat.users",
       select: "name picture email",
@@ -47,8 +47,8 @@ const sendMessage = async (req, res) => {
     await Chat.findByIdAndUpdate(req.body.chatId, { latestMessage: message });
 
     res.send({
-        message: 'message successfully sent',
-        details: message,
+      message: "message successfully sent",
+      details: message,
     });
   } catch (error) {
     res.status(400);
@@ -56,31 +56,38 @@ const sendMessage = async (req, res) => {
   }
 };
 
-
 const updateReactions = async (req, res) => {
   try {
     const { messageId, newReactionType } = req.body;
-    const { userId } = req.user._id;
+    const  userId  = req.user._id;
 
-    const message = await Message.findById(messageId)
-      .populate("sender", "name picture")
-      .populate("chat");
+    const message = await Message.findById(messageId).populate(
+      "reactions.user"
+    );
 
     if (!message) {
       return res.status(404).send({ error: "Message not found" });
     }
 
-    const existingReaction = message.reactions.find(
-      (reaction) => reaction.user === userId
+    const existingReactionIndex = message.reactions.findIndex(
+      (reaction) =>
+        String(reaction.user) === String(userId) ||
+        String(reaction.user._id) === String(userId)
     );
 
-    if (existingReaction) {
-      existingReaction.type = newReactionType;
+    if (existingReactionIndex !== -1) {
+
+      message.reactions[existingReactionIndex].type = newReactionType;
     } else {
-      message.reactions.push({ user: userId, type: newReactionType });
+
+      message.reactions.push({
+        user: userId,
+        type: newReactionType,
+      });
     }
 
     const updatedMessage = await message.save();
+
     const populatedMessage = await Message.populate(updatedMessage, [
       { path: "sender", select: "name picture" },
       { path: "chat" },
@@ -97,10 +104,11 @@ const updateReactions = async (req, res) => {
   }
 };
 
+
 const getReactionsCountForMessage = async (req, res) => {
   try {
-    const {messageId} = req.params;
-    console.log(messageId)
+    const { messageId } = req.params;
+    console.log(messageId);
 
     const message = await Message.findById(messageId);
 
@@ -108,7 +116,7 @@ const getReactionsCountForMessage = async (req, res) => {
       return res.status(404).send({ error: "Message not found" });
     }
 
-    const reactionsCount = {
+    let reactionsCount = {
       like: 0,
       love: 0,
       laugh: 0,
@@ -134,4 +142,9 @@ const getReactionsCountForMessage = async (req, res) => {
   }
 };
 
-module.exports = { getAllMessages, sendMessage, updateReactions,getReactionsCountForMessage };
+module.exports = {
+  getAllMessages,
+  sendMessage,
+  updateReactions,
+  getReactionsCountForMessage,
+};

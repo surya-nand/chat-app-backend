@@ -1,9 +1,9 @@
 const mongoose = require("mongoose");
 
 const reactionSchema = new mongoose.Schema({
-  user: {type: mongoose.Schema.Types.ObjectId,ref:"User"},
-  type: {type:String, enum:["like","love","laugh"]}
-})
+  user: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
+  type: { type: String, enum: ["like", "love", "laugh"] },
+});
 
 const messageModel = mongoose.Schema(
   {
